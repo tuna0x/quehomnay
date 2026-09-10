@@ -1,0 +1,94 @@
+# ====================================================================
+# BẢO MẬT & KHÓA BÍ MẬT (ENV & SECRETS - TUYỆT ĐỐI KHÔNG COMMIT)
+# ====================================================================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
+credentials.json
+
+# ====================================================================
+# THƯ VIỆN & PHỤ THUỘC (DEPENDENCIES)
+# ====================================================================
+node_modules/
+jspm_packages/
+web_modules/
+.pnp/
+.pnp.js
+
+# ====================================================================
+# KẾT QUẢ ĐÓNG GÓI & CACHE BUILD (BUILD ARTIFACTS & CACHES)
+# ====================================================================
+dist/
+dist-ssr/
+build/
+out/
+.cache/
+.vite/
+.parcel-cache/
+.turbo/
+.eslintcache
+
+# ====================================================================
+# NHẬT KÝ & LOGS LỖI
+# ====================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ====================================================================
+# HỆ ĐIỀU HÀNH & FILE RÁC (WINDOWS / MACOS / LINUX)
+# ====================================================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ====================================================================
+# TRÌNH SOẠN THẢO & IDE (VS CODE, WEBSTORM, VIM...)
+# ====================================================================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+*~
+
+# ====================================================================
+# KIỂM THỬ & COVERAGE
+# ====================================================================
+coverage/
+.nyc_output/
+cypress/videos/
+cypress/screenshots/
+
+# ====================================================================
+# AI ASSISTANTS & LOCAL AGENT ARTIFACTS
+# ====================================================================
+.gemini/
+.antigravity/

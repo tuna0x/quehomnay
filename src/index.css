@@ -1,0 +1,291 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-lacquer-deep: #1A0503;
+    --color-lacquer-dark: #2C0A08;
+    --color-gold-ancient: #C9A24A;
+    --color-gold-bright: #E7C978;
+    --color-temple-red: #6E1B1B;
+  }
+
+  body {
+    background: radial-gradient(circle at 50% 15%, #330C0A 0%, #1A0503 60%, #0E0202 100%);
+    color: #F3E8CE;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1A0503;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #4A1212;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #C9A24A;
+  }
+}
+
+/* ==================================================================== */
+/* CINEMATIC SACRED RITUAL KEYFRAMES & ANIMATIONS                       */
+/* ==================================================================== */
+
+/* Cylinder shaking with realistic wooden momentum */
+@keyframes cylinderShakeRhythm {
+  0% { transform: rotate(0deg) translateY(0); }
+  12% { transform: rotate(-8deg) translateY(-8px); }
+  25% { transform: rotate(7deg) translateY(-3px); }
+  37% { transform: rotate(-7deg) translateY(-10px); }
+  50% { transform: rotate(8deg) translateY(-4px); }
+  62% { transform: rotate(-6deg) translateY(-9px); }
+  75% { transform: rotate(6deg) translateY(-3px); }
+  87% { transform: rotate(-4deg) translateY(-6px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+/* Bamboo stick vertical bouncing with recoil */
+@keyframes stickPopFast {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-24px); }
+  65% { transform: translateY(-8px); }
+}
+
+@keyframes stickPopMid {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-28px); }
+  70% { transform: translateY(-12px); }
+}
+
+@keyframes stickPopHigh {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-34px); }
+  60% { transform: translateY(-16px); }
+}
+
+/* Silk tassel physics swing */
+@keyframes tasselPendulum {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(26deg); }
+  50% { transform: rotate(-24deg); }
+  75% { transform: rotate(18deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Chosen Stick Grand Ascension (Shoots out of the tube!) */
+@keyframes stickAscendSky {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 0.9;
+  }
+  40% {
+    transform: translateY(-140px) scale(1.25) rotate(6deg);
+    opacity: 1;
+    filter: drop-shadow(0 0 25px rgba(255, 230, 150, 0.9));
+  }
+  70% {
+    transform: translateY(-105px) scale(1.18) rotate(-2deg);
+  }
+  100% {
+    transform: translateY(-115px) scale(1.2) rotate(0deg);
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+  }
+}
+
+/* Floating bobbing motion for the chosen stick in mid-air */
+@keyframes floatingAura {
+  0%, 100% { transform: translateY(-115px) scale(1.2); }
+  50% { transform: translateY(-125px) scale(1.22); }
+}
+
+/* Holy Light Beam Eruption from cylinder mouth */
+@keyframes lightBeamErupt {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.2) scaleY(0);
+    transform-origin: bottom center;
+  }
+  30% {
+    opacity: 0.9;
+    transform: scaleX(1.4) scaleY(1.3);
+  }
+  70% {
+    opacity: 0.7;
+    transform: scaleX(1) scaleY(1);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scaleX(1.1) scaleY(1.05);
+  }
+}
+
+/* Vermilion Seal Stamp Impact (Slams down on paper with ink imprint!) */
+@keyframes sealSlam {
+  0% {
+    transform: scale(2.8) rotate(-15deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.9) rotate(-2deg);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(1.05) rotate(-4deg);
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
+    opacity: 1;
+  }
+}
+
+/* Real Scroll Unrolling Transition */
+@keyframes scrollUnfurl {
+  0% {
+    max-height: 0px;
+    opacity: 0;
+    transform: scaleY(0.4) translateY(-40px);
+  }
+  40% {
+    opacity: 0.8;
+  }
+  100% {
+    max-height: 1800px;
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
+}
+
+/* Sacred Mandala Rotating */
+@keyframes sacredMandalaSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Sparks erupting from cylinder mouth */
+@keyframes sparkBurst {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.5);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(1.5);
+  }
+}
+
+.animate-cylinder-shake {
+  animation: cylinderShakeRhythm 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+.animate-tassel-swing {
+  transform-origin: 266px 190px;
+  animation: tasselPendulum 0.6s ease-in-out infinite;
+}
+
+.animate-stick-a {
+  animation: stickPopFast 0.4s ease-in-out infinite;
+}
+
+.animate-stick-b {
+  animation: stickPopMid 0.48s ease-in-out infinite;
+}
+
+.animate-stick-c {
+  animation: stickPopHigh 0.54s ease-in-out infinite;
+}
+
+.animate-chosen-ascend {
+  animation: stickAscendSky 0.9s cubic-bezier(0.16, 1, 0.3, 1.2) forwards, floatingAura 3s ease-in-out 0.9s infinite;
+}
+
+.animate-light-beam {
+  animation: lightBeamErupt 0.8s ease-out forwards;
+}
+
+.animate-seal-slam {
+  animation: sealSlam 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.6s both;
+}
+
+.animate-scroll-unroll {
+  animation: scrollUnfurl 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-mandala-fast {
+  animation: sacredMandalaSpin 5s linear infinite;
+}
+
+/* Paper scroll background */
+.paper-scroll {
+  background: 
+    linear-gradient(180deg, #E8D5AC 0%, #F7EEDA 7%, #FBF6EB 50%, #F2E5CB 93%, #DFCBA1 100%);
+  color: #2B2318;
+}
+
+/* Vermilion seal stamp */
+.vermilion-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #C53030;
+  color: #C53030;
+  font-family: 'Noto Serif', serif;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+  box-shadow: 0 0 1px rgba(197, 48, 48, 0.6), inset 0 0 4px rgba(197, 48, 48, 0.2);
+  user-select: none;
+}
+
+/* Gold foil text */
+.gold-text-gradient {
+  background: linear-gradient(135deg, #FFF1C5 0%, #E7C978 40%, #C9A24A 70%, #9B7527 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Floating +1 Draw Counter Keyframes */
+@keyframes floatUpGlow {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0px) scale(1.15);
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1));
+  }
+  75% {
+    opacity: 0.9;
+    transform: translateY(-24px) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.85);
+  }
+}
+
+.animate-float-up {
+  animation: floatUpGlow 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes digitGlowPulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0px transparent); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0px transparent); }
+}
+
+.animate-digit-pulse {
+  animation: digitGlowPulse 0.6s ease-out;
+}
