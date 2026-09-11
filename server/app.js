@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { requestLogger } from './middlewares/logger.js';
+import { trafficLogger } from './middlewares/trafficLogger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import apiRouter from './routes/index.js';
 
@@ -10,6 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
+app.use(trafficLogger);
 
 // API Base Routes
 app.use('/api', apiRouter);

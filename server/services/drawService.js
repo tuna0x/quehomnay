@@ -3,6 +3,7 @@ import { pool } from '../config/db.js';
 import { getTodayDateStringVN } from '../utils/dateHelper.js';
 import { getOrCreateUser } from './userService.js';
 import { incrementGlobalDraws } from './statsService.js';
+import { logActivity } from './activityService.js';
 
 export async function processFortuneDraw({ userId, name, birthYear, question, topic, fortune }) {
   const client = await pool.connect();
@@ -79,6 +80,21 @@ export async function processFortuneDraw({ userId, name, birthYear, question, to
     await client.query('COMMIT');
 
     const row = insertRes.rows[0];
+
+    // Record activity in background
+    logActivity({
+      userId,
+      userEmail: user.email || null,
+      userName: name || user.name || null,
+      actionType: 'DRAW_FORTUNE',
+      details: {
+        ten_que: row.ten_que,
+        muc: row.muc,
+        topic: row.topic,
+        userQuestion: row.user_question,
+        isAI: row.is_ai
+      }
+    }).catch(() => {});
     const savedFortune = {
       id: row.id,
       ten_que: row.ten_que,

@@ -1,4 +1,5 @@
 import * as drawService from '../services/drawService.js';
+import { enqueueDraw } from '../services/drawQueueService.js';
 
 export async function createDraw(req, res, next) {
   try {
@@ -7,7 +8,7 @@ export async function createDraw(req, res, next) {
       return res.status(400).json({ error: 'Missing required parameters (userId, fortune)' });
     }
 
-    const result = await drawService.processFortuneDraw({ userId, name, birthYear, question, topic, fortune });
+    const result = await enqueueDraw({ userId, name, birthYear, question, topic, fortune });
     res.json(result);
   } catch (err) {
     next(err);

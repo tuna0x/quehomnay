@@ -1,5 +1,6 @@
 import { pool } from '../config/db.js';
 import { getTodayDateStringVN, getTimeUntilMidnightVN } from '../utils/dateHelper.js';
+import { logActivity } from './activityService.js';
 
 export async function getOrCreateUser(client, userId) {
   let userRes = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
@@ -95,6 +96,15 @@ export async function grantUserInviteBonus(userId) {
       WHERE id = $4
     `, [newExtra, today, newInvites, userId]);
 
+    // Record activity
+    logActivity({
+      userId,
+      userEmail: user.email || null,
+      userName: user.name || null,
+      actionType: 'INVITE_BONUS',
+      details: { extraDraws: newExtra, inviteCount: newInvites }
+    }).catch(() => {});
+
     return {
       success: true,
       extraDraws: newExtra,
@@ -169,6 +179,15 @@ export async function processReferralClick({ referrerId, visitorId }) {
     `, [newVisitorExtra, today, visitorId]);
 
     await client.query('COMMIT');
+
+    // Record activity in background
+    logActivity({
+      userId: referrerId,
+      userEmail: referrer.email || null,
+      userName: referrer.name || null,
+      actionType: 'REFERRAL_CLICK',
+      details: { visitorId, bonusGranted: true }
+    }).catch(() => {});
 
     return {
       success: true,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Share2, Copy, Check, RotateCcw, Link as LinkIcon } from 'lucide-react';
 import { toPng } from 'html-to-image';
+import { userApi } from '../../api/userApi.js';
 
 export default function FortuneActions({ 
   fortuneRef, 
@@ -57,6 +58,9 @@ export default function FortuneActions({
       link.download = `que-hom-nay-${fortune.ten_que.toLowerCase().replace(/\s+/g, '-')}.png`;
       link.href = dataUrl;
       link.click();
+
+      // Record activity in background
+      userApi.recordAction('SHARE_FORTUNE', { type: 'download_image', ten_que: fortune.ten_que }, userName);
     } catch (err) {
       console.error('Lỗi xuất ảnh:', err);
     } finally {
@@ -73,6 +77,9 @@ export default function FortuneActions({
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2500);
+
+      // Record activity in background
+      userApi.recordAction('SHARE_FORTUNE', { type: 'copy_text', ten_que: fortune.ten_que }, userName);
     } catch (e) {
       console.error('Không thể copy:', e);
     }
@@ -85,6 +92,9 @@ export default function FortuneActions({
       await navigator.clipboard.writeText(shareUrl);
       setIsLinkCopied(true);
       setTimeout(() => setIsLinkCopied(false), 2500);
+
+      // Record activity in background
+      userApi.recordAction('SHARE_FORTUNE', { type: 'copy_link', ten_que: fortune.ten_que }, userName);
     } catch (e) {
       console.error('Không thể copy link:', e);
     }

@@ -6,6 +6,8 @@ import drawRoutes from './drawRoutes.js';
 import historyRoutes from './historyRoutes.js';
 import fortuneRoutes from './fortuneRoutes.js';
 import aiRoutes from './aiRoutes.js';
+import authRoutes from './authRoutes.js';
+import adminRoutes from './adminRoutes.js';
 
 const router = Router();
 
@@ -16,5 +18,7 @@ router.use('/draw', drawRoutes);
 router.use('/history', historyRoutes);
 router.use('/fortune', fortuneRoutes);
 router.use('/ai', aiRoutes);
+router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

@@ -32,5 +32,17 @@ export const userApi = {
       method: 'POST',
       body: JSON.stringify({ userId })
     });
+  },
+
+  // Record custom user actions into activity logs (e.g. sharing fortune)
+  recordAction: async (actionType, details = {}, userName = '') => {
+    try {
+      return await apiClient('/user/action', {
+        method: 'POST',
+        body: JSON.stringify({ actionType, details, userName })
+      });
+    } catch {
+      // Ignore background tracking failures
+    }
   }
 };
