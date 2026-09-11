@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: quehomnay-postgres
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: quehomnay
+    volumes:
+      - quehomnay_pgdata:/var/lib/postgresql/data
+
+volumes:
+  quehomnay_pgdata:
+    name: quehomnay_pgdata

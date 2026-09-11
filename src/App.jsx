@@ -1,73 +1,83 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Header from './components/Header';
-import GoldenDustCanvas from './components/GoldenDustCanvas';
-import LiveDrawCounter from './components/LiveDrawCounter';
-import BambooCylinderPure from './components/BambooCylinderPure';
-import FortuneForm from './components/FortuneForm';
-import ChosenStickCardPure from './components/ChosenStickCardPure';
-import FortuneCard from './components/FortuneCard';
-import FortuneActions from './components/FortuneActions';
-import DailyLimitBanner from './components/DailyLimitBanner';
-import InviteFriendModal from './components/InviteFriendModal';
-import ApiKeyModal from './components/ApiKeyModal';
-import HistoryModal from './components/HistoryModal';
-import { generateFortune } from './services/aiService';
-import { 
-  checkCanDrawToday, 
-  recordDrawToday, 
-  getDrawHistory, 
-  resetDailyLimit 
-} from './utils/storage';
-import { 
-  ensureAudioContext, 
-  playWoodBlockSound, 
-  playStickAscendSound, 
-  playBellSound 
-} from './utils/audio';
-import { Sparkles, Heart } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import {
+  Header,
+  Footer,
+  GoldenDustCanvas,
+  SharedViewBanner,
+  LiveDrawCounter,
+  BambooCylinderPure,
+  ChosenStickCardPure,
+  FortuneCard,
+  FortuneActions,
+  FortuneForm,
+  DailyLimitBanner,
+  HistoryModal,
+  InviteFriendModal
+} from './components';
+import { useDrawStatus, useDrawHistory, useFortuneDraw } from './hooks';
+import { userApi } from './api';
 
 export default function App() {
-  const [name, setName] = useState('');
-  const [question, setQuestion] = useState('');
-  const [isShaking, setIsShaking] = useState(false);
-  
-  // Ritual step states: 'IDLE' | 'SHAKING' | 'STICK_REVEALED' | 'CARD_UNROLLED'
-  const [ritualState, setRitualState] = useState('IDLE');
-  const [fortune, setFortune] = useState(null);
-  const [canDraw, setCanDraw] = useState(true);
-  const [extraDraws, setExtraDraws] = useState(0);
-  const [todayFortune, setTodayFortune] = useState(null);
-  const [history, setHistory] = useState([]);
-  
-  // Shared URL State (?q=...)
+  // Shared fortune view state (?q=...)
   const [isSharedView, setIsSharedView] = useState(false);
   const [sharedSender, setSharedSender] = useState('');
+  const [referralToast, setReferralToast] = useState(null);
 
-  // Counter event trigger
-  const [drawEventTrigger, setDrawEventTrigger] = useState(0);
-
-  // Modals
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // Modals state
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
-  // Card reference for html-to-image export
+  // Counter event trigger for visual pulse
+  const [drawCounterEvent, setDrawCounterEvent] = useState(0);
+
+  // Refs for smooth scroll & screenshot generation
   const fortuneCardRef = useRef(null);
   const ritualSectionRef = useRef(null);
 
-  // Initial check on load
-  const refreshDrawStatus = () => {
-    const status = checkCanDrawToday();
-    setCanDraw(status.canDraw);
-    setExtraDraws(status.extraDraws);
-    setTodayFortune(status.fortune);
-    setHistory(getDrawHistory());
+  // 1. Data Hooks
+  const { history, isOpen: isHistoryOpen, openHistory, closeHistory, clearHistory, fetchHistory } = useDrawHistory();
+  const { canDraw, extraDraws, todayFortune, refreshStatus, resetLimit } = useDrawStatus();
+
+  // Smooth scroll helper with comfortable top headroom
+  const scrollToRitual = (delay = 100) => {
+    setTimeout(() => {
+      const el = ritualSectionRef.current;
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.pageYOffset - 20;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      }
+    }, delay);
   };
 
-  useEffect(() => {
-    refreshDrawStatus();
+  // 2. Fortune Draw Ritual Hook
+  const {
+    name,
+    setName,
+    birthYear,
+    setBirthYear,
+    question,
+    setQuestion,
+    topic,
+    setTopic,
+    isShaking,
+    ritualState,
+    setRitualState,
+    fortune,
+    setFortune,
+    startDraw,
+    openScroll,
+    resetRitual
+  } = useFortuneDraw({
+    onDrawSuccess: async () => {
+      setDrawCounterEvent(prev => prev + 1);
+      await refreshStatus();
+      await fetchHistory();
+      scrollToRitual(120);
+    }
+  });
 
-    // Check if user came from a shared fortune link: ?q=...
+  // 3. Handle shared link on initial load
+  useEffect(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const qParam = urlParams.get('q');
@@ -96,126 +106,81 @@ export default function App() {
           setSharedSender(p.u || 'Một người bạn');
           setIsSharedView(true);
           setRitualState('CARD_UNROLLED');
-          return;
         }
       }
     } catch (err) {
-      console.debug("Could not parse shared fortune link:", err);
+      console.debug('Could not parse shared link:', err);
     }
-  }, []);
+  }, [setFortune, setName, setQuestion, setRitualState]);
 
-  // Friend clicks CTA to draw their own fortune
+  // 4. Handle referral link click when partner opens ?ref=userId
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const refId = urlParams.get('ref');
+      if (refId && refId !== 'duyen-lanh') {
+        userApi.recordReferralClick(refId)
+          .then(async (res) => {
+            if (res && res.bonusGranted) {
+              await refreshStatus();
+              setReferralToast('✦ Duyên Lành Tương Ngộ: Bạn đã mở liên kết mời gieo quẻ từ bạn bè! Cả bạn và người gửi đều được nhận thêm +1 lượt gieo quẻ hôm nay. ✦');
+              setTimeout(() => setReferralToast(null), 10000);
+            } else if (res && res.alreadyCounted) {
+              setReferralToast('✦ Duyên Lành: Hôm nay bạn đã nhận lượt mở từ liên kết này rồi. Hãy gieo quẻ để nhận lời sấm truyền nhé! ✦');
+              setTimeout(() => setReferralToast(null), 7000);
+            } else if (res && res.reason === 'self_referral') {
+              setReferralToast('✦ Đây là liên kết mời của chính bạn. Hãy gửi cho bạn bè để cả 2 cùng nhận thêm lượt nhé! ✦');
+              setTimeout(() => setReferralToast(null), 7000);
+            }
+          })
+          .catch((err) => {
+            console.debug('[Referral] Could not record click:', err);
+          });
+      }
+    } catch {
+      // ignore
+    }
+  }, [refreshStatus]);
+
+  // Friend clicks CTA to start their own draw
   const handleStartOwnDraw = () => {
     window.history.replaceState({}, document.title, window.location.pathname);
     setIsSharedView(false);
-    setFortune(null);
+    resetRitual();
     setName('');
+    setBirthYear('');
     setQuestion('');
-    setRitualState('IDLE');
-    refreshDrawStatus();
+    setTopic('Công việc & Sự nghiệp');
+    refreshStatus();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Handle Draw Fortune action
-  const handleDraw = async () => {
-    if (isShaking) return;
-
-    ensureAudioContext();
-    playWoodBlockSound();
-
-    setIsShaking(true);
-    setRitualState('SHAKING');
-    setFortune(null);
-
-    try {
-      const fortunePromise = generateFortune({ name, question });
-      const delayPromise = new Promise((resolve) => setTimeout(resolve, 2300));
-
-      const [result] = await Promise.all([fortunePromise, delayPromise]);
-
-      setFortune(result);
-      setTodayFortune(result);
-
-      // Increment global counter on successful draw
-      setDrawEventTrigger(prev => prev + 1);
-
-      recordDrawToday(result);
-      refreshDrawStatus();
-
-      setIsShaking(false);
-      setRitualState('STICK_REVEALED');
-      playStickAscendSound();
-      setTimeout(() => {
-        playBellSound();
-      }, 350);
-
-      setTimeout(() => {
-        ritualSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-
-    } catch (err) {
-      console.error("Lỗi xin quẻ:", err);
-      setIsShaking(false);
-      setRitualState('IDLE');
-    }
   };
 
   // Open the unrolled scroll card
   const handleOpenScroll = () => {
-    ensureAudioContext();
-    setRitualState('CARD_UNROLLED');
-    setTimeout(() => {
-      ritualSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 120);
+    openScroll();
+    scrollToRitual(120);
   };
 
-  // Bonus granted callback from Invite modal
-  const handleBonusGranted = () => {
-    refreshDrawStatus();
-    setCanDraw(true);
-    setRitualState('IDLE');
-  };
 
-  // Test mode reset (Dev / Demo)
-  const handleTestReset = () => {
-    resetDailyLimit();
-    setCanDraw(true);
-    setExtraDraws(0);
-    setFortune(null);
-    setTodayFortune(null);
-    setRitualState('IDLE');
-  };
-
-  // View today's drawn fortune
+  // View today's already drawn fortune
   const handleViewTodayFortune = () => {
     if (todayFortune) {
       setFortune(todayFortune);
       setRitualState('CARD_UNROLLED');
-      setTimeout(() => {
-        ritualSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      scrollToRitual(100);
     }
   };
 
-  // Select fortune from history
+  // Select fortune from history modal
   const handleSelectHistoryItem = (item) => {
     setFortune(item);
     setRitualState('CARD_UNROLLED');
-    setTimeout(() => {
-      ritualSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
-
-  // Clear history
-  const handleClearHistory = () => {
-    localStorage.removeItem('qhn_draw_history');
-    setHistory([]);
+    scrollToRitual(100);
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-between relative bg-radial-gradient text-paper-light selection:bg-gold-ancient selection:text-lacquer-deep">
-      
-      {/* Pure Canvas Golden Stardust Background */}
+      {/* Background Stardust Particles */}
       <GoldenDustCanvas />
 
       {/* Atmospheric Spiritual Light Halo */}
@@ -226,51 +191,49 @@ export default function App() {
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center">
-        {/* Header with Altar and Actions */}
+        {/* Navigation Header */}
         <Header 
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onOpenHistory={() => setIsHistoryOpen(true)}
+          onOpenHistory={openHistory}
           historyCount={history.length}
         />
 
-        {/* Live Global Draw Counter & Active Online Badge */}
-        <LiveDrawCounter onDrawEvent={drawEventTrigger} />
-
-        {/* Main Content Area */}
-        <main className="w-full max-w-xl mx-auto flex flex-col items-center pb-8">
-          
-          {/* SHARED VIEW BANNER: If viewing a friend's fortune from link ?q=... */}
-          {isSharedView && (
-            <div className="w-full max-w-md mx-4 mb-3 p-3.5 rounded-lg bg-gradient-to-r from-amber-950/70 via-temple-red/60 to-amber-950/70 border-2 border-gold-bright text-center shadow-gold-glow animate-fade-in">
-              <div className="flex items-center justify-center gap-1.5 text-xs font-serif font-bold text-gold-bright mb-1">
-                <Heart size={14} className="text-red-400 fill-red-400 animate-pulse" />
-                <span>Quẻ Bình An Được Gửi Tặng Từ {sharedSender}</span>
+        {/* Main Ritual & Content Stage */}
+        <main className="w-full max-w-xl mx-auto flex flex-col items-center pb-8 px-4">
+          {/* Referral Notification Banner */}
+          {referralToast && (
+            <div className="w-full max-w-lg mb-4 p-3.5 rounded-lg bg-gradient-to-r from-[#2A0907] via-[#481410] to-[#2A0907] border-2 border-gold-bright shadow-[0_0_25px_rgba(212,175,55,0.3)] flex items-start gap-3 animate-fadeIn relative text-paper-light">
+              <Sparkles size={18} className="text-gold-bright shrink-0 mt-0.5 animate-pulse" />
+              <div className="flex-1 text-xs font-serif leading-relaxed text-gold-pale">
+                {referralToast}
               </div>
-              <p className="text-[11px] text-paper-light/90 font-serif leading-relaxed mb-2.5">
-                Bạn của bạn vừa gieo được quẻ này và gửi tặng bạn cùng chiêm nghiệm!
-              </p>
               <button
-                onClick={handleStartOwnDraw}
-                className="w-full py-2 px-4 rounded bg-gradient-to-r from-gold-ancient via-gold-bright to-gold-ancient text-lacquer-deep font-serif font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition shadow-md flex items-center justify-center gap-1.5"
+                onClick={() => setReferralToast(null)}
+                className="text-gold-muted hover:text-gold-bright transition text-sm px-1 leading-none"
+                title="Đóng thông báo"
               >
-                <Sparkles size={14} />
-                <span>Gieo Quẻ Riêng Cho Bạn Hôm Nay</span>
+                ✕
               </button>
             </div>
           )}
 
-          {/* 1. Pure SVG 3D Bamboo Cylinder with Motion & Drag Shake (Hidden in shared view) */}
+          {/* Shared View Banner */}
+          {isSharedView && (
+            <SharedViewBanner 
+              sender={sharedSender}
+              onStartOwnDraw={handleStartOwnDraw}
+            />
+          )}
+
+          {/* 1. Bamboo Cylinder (Motion & Drag Shake) */}
           {!isSharedView && ritualState !== 'CARD_UNROLLED' && (
             <BambooCylinderPure
               isShaking={isShaking}
               isStickRevealed={ritualState === 'STICK_REVEALED'}
               chosenFortune={fortune}
               onClick={() => {
-                if (canDraw && !isShaking) {
-                  handleDraw();
-                }
+                if (canDraw && !isShaking) startDraw();
               }}
-              onTriggerDraw={handleDraw}
+              onTriggerDraw={startDraw}
               disabled={!canDraw}
             />
           )}
@@ -280,9 +243,13 @@ export default function App() {
             <FortuneForm
               name={name}
               setName={setName}
+              birthYear={birthYear}
+              setBirthYear={setBirthYear}
+              topic={topic}
+              setTopic={setTopic}
               question={question}
               setQuestion={setQuestion}
-              onSubmit={handleDraw}
+              onSubmit={startDraw}
               isShaking={isShaking}
               disabled={!canDraw}
               extraDraws={extraDraws}
@@ -293,7 +260,6 @@ export default function App() {
           {!isSharedView && !canDraw && ritualState === 'IDLE' && (
             <DailyLimitBanner
               onViewTodayFortune={handleViewTodayFortune}
-              onTestReset={handleTestReset}
               onOpenInviteModal={() => setIsInviteOpen(true)}
             />
           )}
@@ -314,7 +280,9 @@ export default function App() {
                   ref={fortuneCardRef}
                   fortune={fortune}
                   userName={name}
+                  birthYear={birthYear}
                   userQuestion={question}
+                  topic={topic}
                 />
                 
                 {isSharedView ? (
@@ -331,8 +299,8 @@ export default function App() {
                   <FortuneActions
                     fortuneRef={fortuneCardRef}
                     fortune={fortune}
-                    onReset={handleTestReset}
-                    canDrawAgain={true}
+                    onReset={resetRitual}
+                    canDrawAgain={canDraw}
                     userName={name}
                     userQuestion={question}
                   />
@@ -341,63 +309,32 @@ export default function App() {
             )}
           </div>
 
+          {/* Global Community Draw Counter */}
+          <div className="w-full mt-6 mb-2">
+            <LiveDrawCounter onDrawEvent={drawCounterEvent} />
+          </div>
         </main>
       </div>
 
       {/* Classical Temple Footer */}
-      <footer className="relative z-10 w-full max-w-xl mx-auto py-6 px-4 border-t border-gold-ancient/15 text-center text-xs text-gold-muted/70 font-serif">
-        <div className="flex items-center justify-center gap-2 mb-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-gold-ancient/50"></span>
-          <span>Tâm thành tất ứng • Thiện niệm khởi sinh</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-gold-ancient/50"></span>
-        </div>
-        <p className="text-[11px] text-gold-muted/50">
-          Quẻ Hôm Nay — Ứng dụng gieo quẻ truyền thống kết hợp Trí tuệ nhân tạo.
-        </p>
-        <div className="mt-2.5 flex justify-center items-center gap-3 text-[10px]">
-          <button 
-            onClick={handleTestReset}
-            className="text-gold-bright/70 hover:text-gold-bright transition underline underline-offset-2"
-          >
-            Đặt lại lượt rút (Thử nghiệm)
-          </button>
-          <span>•</span>
-          <button 
-            onClick={() => setIsInviteOpen(true)}
-            className="text-gold-bright/70 hover:text-gold-bright transition underline underline-offset-2"
-          >
-            Mời bạn (+1 lượt)
-          </button>
-          <span>•</span>
-          <button 
-            onClick={() => setIsSettingsOpen(true)}
-            className="text-gold-muted/50 hover:text-gold-pale transition underline underline-offset-2"
-          >
-            Cài đặt AI Key
-          </button>
-        </div>
-      </footer>
+      <Footer 
+        onOpenInvite={() => setIsInviteOpen(true)}
+      />
 
       {/* Modals */}
       <InviteFriendModal
         isOpen={isInviteOpen}
         onClose={() => setIsInviteOpen(false)}
-        onBonusGranted={handleBonusGranted}
-      />
-
-      <ApiKeyModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onBonusGranted={refreshStatus}
       />
 
       <HistoryModal
         isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
+        onClose={closeHistory}
         history={history}
         onSelectFortune={handleSelectHistoryItem}
-        onClearHistory={handleClearHistory}
+        onClearHistory={clearHistory}
       />
-
     </div>
   );
 }

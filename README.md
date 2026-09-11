@@ -23,7 +23,7 @@
 
 Lấy cảm hứng sâu sắc từ phong tục **xin xăm, gieo quẻ đầu xuân tại các ngôi chùa cổ truyền Việt Nam**, **Quẻ Hôm Nay** mang đến một trải nghiệm nghi thức số hóa chân thực, thiêng liêng và giàu cảm xúc dành cho thế hệ người dùng hiện đại (18–35 tuổi).
 
-Khác biệt hoàn toàn với các ứng dụng bói toán/tarot nội dung cố định, mỗi lời quẻ tại đây được **Trí tuệ nhân tạo (Google Gemini 1.5 Flash)** chấp bút riêng biệt dựa trên chính tâm nguyện và băn khoăn của thiện tín, đi kèm hệ thống mô phỏng vật lý đa giác quan (cử động lắc thực tế, âm thanh mộc mạc và cuộn giấy thư pháp truyền thống).
+Khác biệt hoàn toàn với các ứng dụng bói toán/tarot nội dung cố định, mỗi lời quẻ tại đây được **Trí tuệ nhân tạo (ChatGPT 5.6 LUNA)** chấp bút riêng biệt dựa trên chính tâm nguyện và băn khoăn của thiện tín, đi kèm hệ thống mô phỏng vật lý đa giác quan (cử động lắc thực tế, âm thanh mộc mạc và cuộn giấy thư pháp truyền thống).
 
 ---
 

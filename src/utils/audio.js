@@ -3,7 +3,7 @@
 // PLUS: Zen Ambient Meditation Soundscape (Wind Chimes, Bamboo Water Drops, Meditative Drone)
 // 100% Native Web Audio, zero external assets, zero lag, bypasses autoplay restrictions
 
-import { getSoundSetting } from './storage';
+import { getSoundSetting } from './preferences';
 
 let audioCtx = null;
 
