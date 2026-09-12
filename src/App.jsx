@@ -13,10 +13,12 @@ import {
   FortuneForm,
   DailyLimitBanner,
   HistoryModal,
-  InviteFriendModal
+  InviteFriendModal,
+  AuthModal,
+  AdminDashboardModal
 } from './components';
-import { useDrawStatus, useDrawHistory, useFortuneDraw } from './hooks';
-import { userApi } from './api';
+import { useDrawStatus, useDrawHistory, useFortuneDraw, useAuth } from './hooks';
+import { userApi, statsApi } from './api';
 
 export default function App() {
   // Shared fortune view state (?q=...)
@@ -26,6 +28,8 @@ export default function App() {
 
   // Modals state
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   // Counter event trigger for visual pulse
   const [drawCounterEvent, setDrawCounterEvent] = useState(0);
@@ -34,9 +38,15 @@ export default function App() {
   const fortuneCardRef = useRef(null);
   const ritualSectionRef = useRef(null);
 
-  // 1. Data Hooks
+  // 1. Data & Auth Hooks
+  const auth = useAuth();
   const { history, isOpen: isHistoryOpen, openHistory, closeHistory, clearHistory, fetchHistory } = useDrawHistory();
   const { canDraw, extraDraws, todayFortune, refreshStatus, resetLimit } = useDrawStatus();
+
+  // Track initial client page view traffic
+  useEffect(() => {
+    statsApi.trackPageView();
+  }, []);
 
   // Smooth scroll helper with comfortable top headroom
   const scrollToRitual = (delay = 100) => {
@@ -75,6 +85,13 @@ export default function App() {
       scrollToRitual(120);
     }
   });
+
+  // Auto-fill form name if user is logged in and hasn't typed a name
+  useEffect(() => {
+    if (auth.user?.name && !name) {
+      setName(auth.user.name);
+    }
+  }, [auth.user, name, setName]);
 
   // 3. Handle shared link on initial load
   useEffect(() => {
@@ -195,6 +212,19 @@ export default function App() {
         <Header 
           onOpenHistory={openHistory}
           historyCount={history.length}
+          user={auth.user}
+          isAdmin={auth.isAdmin}
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenAdmin={() => {
+            if (auth.isAdmin) {
+              setIsAdminOpen(true);
+            }
+          }}
+          onLogout={() => {
+            auth.logout();
+            refreshStatus();
+            fetchHistory();
+          }}
         />
 
         {/* Main Ritual & Content Stage */}
@@ -334,6 +364,24 @@ export default function App() {
         history={history}
         onSelectFortune={handleSelectHistoryItem}
         onClearHistory={clearHistory}
+      />
+
+      {/* Authentication Modal (Sign In / Register / Google) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        authHook={auth}
+        onSuccess={async () => {
+          await refreshStatus();
+          await fetchHistory();
+        }}
+      />
+
+      {/* Admin Management & Analytics Dashboard */}
+      <AdminDashboardModal
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+        currentUser={auth.user}
       />
     </div>
   );

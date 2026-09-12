@@ -23,3 +23,5 @@ export { default as DailyLimitBanner } from './forms/DailyLimitBanner.jsx';
 // Dialog Modals
 export { default as HistoryModal } from './modals/HistoryModal.jsx';
 export { default as InviteFriendModal } from './modals/InviteFriendModal.jsx';
+export { default as AuthModal } from './auth/AuthModal.jsx';
+export { default as AdminDashboardModal } from './admin/AdminDashboardModal.jsx';

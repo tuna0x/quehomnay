@@ -18,6 +18,22 @@ export async function initDb() {
       );
     `);
 
+    // Ensure user authentication and role fields
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS provider VARCHAR(20) DEFAULT 'device';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+    `);
+
     // 2. Draws table (stores full fortune draw history)
     await client.query(`
       CREATE TABLE IF NOT EXISTS draws (
@@ -62,12 +78,68 @@ export async function initDb() {
       CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
     `);
 
-    // 4. Global Stats table (counts all draws across platform)
+    // 4. Traffic Logs table (tracks visits, endpoints, response time, devices)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS traffic_logs (
+        id BIGSERIAL PRIMARY KEY,
+        path VARCHAR(255) NOT NULL,
+        method VARCHAR(10) DEFAULT 'GET',
+        ip VARCHAR(100),
+        user_agent TEXT,
+        referrer TEXT,
+        user_id VARCHAR(100),
+        status_code INT DEFAULT 200,
+        response_time_ms INT DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_traffic_created ON traffic_logs(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_traffic_user ON traffic_logs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_traffic_path ON traffic_logs(path);
+    `);
+
+    // 5. Activity Logs table (tracks user events: registration, login, draws, bonus, role changes)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id BIGSERIAL PRIMARY KEY,
+        user_id VARCHAR(100),
+        user_email VARCHAR(255),
+        user_name VARCHAR(255),
+        action_type VARCHAR(50) NOT NULL,
+        details JSONB DEFAULT '{}'::jsonb,
+        ip VARCHAR(100),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_logs(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_logs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_activity_type ON activity_logs(action_type);
+    `);
+
+    // 6. Global Stats table (counts all draws across platform)
     await client.query(`
       CREATE TABLE IF NOT EXISTS global_stats (
         key VARCHAR(50) PRIMARY KEY,
         value BIGINT NOT NULL
       );
+    `);
+
+    // 7. Dead Letter Queue (DLQ) table for failed background jobs and draw/AI retries
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS failed_jobs (
+        id BIGSERIAL PRIMARY KEY,
+        job_type VARCHAR(50) NOT NULL,
+        payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+        error_message TEXT NOT NULL,
+        error_stack TEXT,
+        retry_count INT DEFAULT 0,
+        max_retries INT DEFAULT 3,
+        status VARCHAR(20) DEFAULT 'failed',
+        user_id VARCHAR(100),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_failed_jobs_status ON failed_jobs(status);
+      CREATE INDEX IF NOT EXISTS idx_failed_jobs_type ON failed_jobs(job_type);
+      CREATE INDEX IF NOT EXISTS idx_failed_jobs_created ON failed_jobs(created_at DESC);
     `);
 
     // Seed baseline statistics
@@ -81,7 +153,7 @@ export async function initDb() {
       ON CONFLICT (key) DO NOTHING;
     `);
 
-    console.log('[DB] PostgreSQL schema successfully initialized!');
+    console.log('[DB] PostgreSQL schema successfully initialized with Auth, Traffic, Activity & DLQ tables!');
   } finally {
     client.release();
   }

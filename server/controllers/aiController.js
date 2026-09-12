@@ -1,15 +1,19 @@
-import { generateFortuneWithLuna, chatWithLuna } from '../services/aiService.js';
+import { enqueueAiFortune, enqueueAiChat } from '../services/aiQueueService.js';
+import { logActivity } from '../services/activityService.js';
 
 export async function generateFortuneHandler(req, res, next) {
   try {
     const { name = '', birthYear = '', question = '', topic = '', preferredLevel = 'Trung', customApiKey = '' } = req.body;
-    const fortune = await generateFortuneWithLuna({
+    const userId = req.user?.id || req.headers['x-user-id'] || req.body.userId || null;
+
+    const fortune = await enqueueAiFortune({
       name,
       birthYear,
       question,
       topic,
       preferredLevel,
-      customApiKey
+      customApiKey,
+      userId
     });
 
     res.json({
@@ -24,13 +28,30 @@ export async function generateFortuneHandler(req, res, next) {
 export async function chatLunaHandler(req, res, next) {
   try {
     const { messages = [], fortune = null, name = '', question = '', customApiKey = '' } = req.body;
-    const result = await chatWithLuna({
+    const userId = req.user?.id || req.headers['x-user-id'] || req.body.userId || null;
+
+    const result = await enqueueAiChat({
       messages,
       fortune,
       name,
       question,
-      customApiKey
+      customApiKey,
+      userId
     });
+
+    // Record activity in background
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || req.ip;
+    logActivity({
+      userId,
+      userName: name || null,
+      actionType: 'AI_CHAT',
+      details: {
+        fortune: fortune?.ten_que || null,
+        userQuestion: question || null,
+        messagesCount: messages.length
+      },
+      ip
+    }).catch(() => {});
 
     res.json(result);
   } catch (error) {
