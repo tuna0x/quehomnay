@@ -2,7 +2,8 @@ import * as drawService from '../services/drawService.js';
 
 export async function createDraw(req, res, next) {
   try {
-    const { userId, name, birthYear, question, topic, fortune } = req.body;
+    const { userId: requestedUserId, name, birthYear, question, topic, fortune } = req.body;
+    const userId = req.user?.id || requestedUserId;
     if (!userId || !fortune || !fortune.ten_que) {
       return res.status(400).json({ error: 'Missing required parameters (userId, fortune)' });
     }
@@ -16,7 +17,8 @@ export async function createDraw(req, res, next) {
 
 export async function getHistory(req, res, next) {
   try {
-    const { userId, limit } = req.query;
+    const { userId: requestedUserId, limit } = req.query;
+    const userId = req.user?.id || requestedUserId;
     if (!userId) {
       return res.status(400).json({ error: 'userId is required' });
     }
@@ -30,7 +32,8 @@ export async function getHistory(req, res, next) {
 
 export async function clearHistory(req, res, next) {
   try {
-    const userId = req.query.userId || req.body.userId;
+    const requestedUserId = req.query.userId || req.body.userId;
+    const userId = req.user?.id || requestedUserId;
     if (!userId) {
       return res.status(400).json({ error: 'userId is required' });
     }

@@ -13,9 +13,14 @@ import {
   FortuneForm,
   DailyLimitBanner,
   HistoryModal,
-  InviteFriendModal
+  InviteFriendModal,
+  ContactModal,
+  AuthModal,
+  AdminContactModal,
+  DiscoverableContent
 } from './components';
 import { useDrawStatus, useDrawHistory, useFortuneDraw } from './hooks';
+import { useAuth } from './hooks/useAuth.js';
 import { userApi } from './api';
 
 export default function App() {
@@ -26,6 +31,9 @@ export default function App() {
 
   // Modals state
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAdminContactOpen, setIsAdminContactOpen] = useState(false);
 
   // Counter event trigger for visual pulse
   const [drawCounterEvent, setDrawCounterEvent] = useState(0);
@@ -37,6 +45,7 @@ export default function App() {
   // 1. Data Hooks
   const { history, isOpen: isHistoryOpen, openHistory, closeHistory, clearHistory, fetchHistory } = useDrawHistory();
   const { canDraw, extraDraws, todayFortune, refreshStatus, resetLimit } = useDrawStatus();
+  const authHook = useAuth();
 
   // Smooth scroll helper with comfortable top headroom
   const scrollToRitual = (delay = 100) => {
@@ -178,6 +187,18 @@ export default function App() {
     scrollToRitual(100);
   };
 
+  const handleAuthSuccess = async () => {
+    await Promise.all([fetchHistory(), refreshStatus()]);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await Promise.all([fetchHistory(), refreshStatus()]);
+    } catch (error) {
+      console.error('[Auth] Logout failed:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-between relative bg-radial-gradient text-paper-light selection:bg-gold-ancient selection:text-lacquer-deep">
       {/* Background Stardust Particles */}
@@ -193,6 +214,9 @@ export default function App() {
       <div className="relative z-10 flex-1 flex flex-col items-center">
         {/* Navigation Header */}
         <Header 
+          authUser={authHook.user}
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenAdminContact={() => setIsAdminContactOpen(true)}
           onOpenHistory={openHistory}
           historyCount={history.length}
         />
@@ -313,12 +337,15 @@ export default function App() {
           <div className="w-full mt-6 mb-2">
             <LiveDrawCounter onDrawEvent={drawCounterEvent} />
           </div>
+
+          <DiscoverableContent />
         </main>
       </div>
 
       {/* Classical Temple Footer */}
       <Footer 
         onOpenInvite={() => setIsInviteOpen(true)}
+        onOpenContact={() => setIsContactOpen(true)}
       />
 
       {/* Modals */}
@@ -326,8 +353,26 @@ export default function App() {
         isOpen={isInviteOpen}
         onClose={() => setIsInviteOpen(false)}
         onBonusGranted={refreshStatus}
+        userId={authHook.user?.id}
       />
 
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        authUser={authHook.user}
+        authHook={authHook}
+        onSuccess={handleAuthSuccess}
+        onLogout={handleLogout}
+      />
+      <AdminContactModal
+        isOpen={isAdminContactOpen}
+        onClose={() => setIsAdminContactOpen(false)}
+      />
       <HistoryModal
         isOpen={isHistoryOpen}
         onClose={closeHistory}

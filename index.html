@@ -2,22 +2,156 @@
 <html lang="vi" class="bg-lacquer-deep text-paper-light antialiased">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Quẻ Hôm Nay — Xin Xăm Gieo Quẻ Khởi Tâm An</title>
-    <meta name="description" content="Rút quẻ mỗi ngày khởi tâm an lạc. Mỗi quẻ được luận giải riêng theo tâm nguyện, mang âm hưởng thiền định và văn hóa cổ truyền Việt Nam." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1A0503" />
-    <meta property="og:title" content="Quẻ Hôm Nay — Xin Xăm Gieo Quẻ Khởi Tâm An" />
-    <meta property="og:description" content="Rút quẻ mỗi ngày, ngẫm câu thơ cổ và nhận lời khuyên an nhiên cho cuộc sống." />
-    <meta property="og:type" content="website" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="Quẻ Hôm Nay" />
+    <meta name="author" content="Quẻ Hôm Nay" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="description" content="Xin quẻ, gieo quẻ online mỗi ngày tại Quẻ Hôm Nay. Chiêm nghiệm lời quẻ, câu thơ cổ và lời khuyên an nhiên cho công việc, tình duyên và cuộc sống." />
 
-    <!-- Google Fonts -->
+    <title>Quẻ Hôm Nay – Xin Quẻ, Gieo Quẻ Online Mỗi Ngày</title>
+    <link rel="canonical" href="https://quehomnay.online/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="Thông tin Quẻ Hôm Nay cho công cụ AI" />
+
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Quẻ Hôm Nay" />
+    <meta property="og:url" content="https://quehomnay.online/" />
+    <meta property="og:title" content="Quẻ Hôm Nay – Xin Quẻ, Gieo Quẻ Online Mỗi Ngày" />
+    <meta property="og:description" content="Một trải nghiệm xin quẻ online bằng tiếng Việt để chậm lại, chiêm nghiệm và tìm lời khuyên an nhiên mỗi ngày." />
+    <meta property="og:image" content="https://quehomnay.online/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Quẻ Hôm Nay – Xin quẻ và gieo quẻ online mỗi ngày" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Quẻ Hôm Nay – Xin Quẻ, Gieo Quẻ Online Mỗi Ngày" />
+    <meta name="twitter:description" content="Xin quẻ online bằng tiếng Việt để chiêm nghiệm công việc, tình duyên, tài lộc và cuộc sống." />
+    <meta name="twitter:image" content="https://quehomnay.online/og-image.png" />
+    <meta name="twitter:image:alt" content="Quẻ Hôm Nay – Xin quẻ và gieo quẻ online mỗi ngày" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://quehomnay.online/#website",
+            "url": "https://quehomnay.online/",
+            "name": "Quẻ Hôm Nay",
+            "alternateName": "Quẻ Hôm Nay Online",
+            "description": "Xin quẻ và gieo quẻ online mỗi ngày để chiêm nghiệm, cầu an và tìm lời khuyên an nhiên.",
+            "inLanguage": "vi-VN",
+            "publisher": { "@id": "https://quehomnay.online/#organization" }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://quehomnay.online/#webpage",
+            "url": "https://quehomnay.online/",
+            "name": "Quẻ Hôm Nay – Xin Quẻ, Gieo Quẻ Online Mỗi Ngày",
+            "description": "Trải nghiệm xin quẻ và gieo quẻ online bằng tiếng Việt cho công việc, tài lộc, tình duyên, gia đạo và tâm an.",
+            "isPartOf": { "@id": "https://quehomnay.online/#website" },
+            "about": { "@id": "https://quehomnay.online/#application" },
+            "primaryImageOfPage": { "@id": "https://quehomnay.online/#og-image" },
+            "inLanguage": "vi-VN"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://quehomnay.online/#application",
+            "url": "https://quehomnay.online/",
+            "name": "Quẻ Hôm Nay",
+            "description": "Ứng dụng web xin quẻ và gieo quẻ online mỗi ngày với lời quẻ, câu thơ cổ, giải nghĩa và lời khuyên chiêm nghiệm.",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "vi-VN",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "VND" },
+            "featureList": [
+              "Xin quẻ online mỗi ngày",
+              "Gieo quẻ theo chủ đề công việc, tài lộc, tình duyên, gia đạo và tâm an",
+              "Lưu lịch sử quẻ khi đăng nhập"
+            ],
+            "publisher": { "@id": "https://quehomnay.online/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://quehomnay.online/#organization",
+            "name": "Quẻ Hôm Nay",
+            "url": "https://quehomnay.online/",
+            "logo": { "@type": "ImageObject", "url": "https://quehomnay.online/favicon.svg" }
+          },
+          {
+            "@type": "ImageObject",
+            "@id": "https://quehomnay.online/#og-image",
+            "url": "https://quehomnay.online/og-image.png",
+            "contentUrl": "https://quehomnay.online/og-image.png",
+            "width": 1200,
+            "height": 630,
+            "caption": "Quẻ Hôm Nay – Xin quẻ và gieo quẻ online mỗi ngày"
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://quehomnay.online/#faq",
+            "url": "https://quehomnay.online/#faq",
+            "inLanguage": "vi-VN",
+            "isPartOf": { "@id": "https://quehomnay.online/#webpage" },
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Quẻ hôm nay là gì?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Quẻ hôm nay là một thông điệp chiêm nghiệm được rút theo ngày và điều người dùng đang băn khoăn. Nội dung nhằm gợi mở góc nhìn, giúp bạn bình tâm trước khi đưa ra quyết định."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Xin quẻ và gieo quẻ trên Quẻ Hôm Nay như thế nào?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Bạn chọn ngày sinh nếu muốn tham khảo thêm thông tin bản mệnh, chọn lĩnh vực quan tâm, viết câu hỏi rồi bấm Thành Tâm Xin Quẻ. Mỗi ngày bạn có một lượt gieo quẻ miễn phí."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Quẻ có dự đoán chính xác tương lai không?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Không. Quẻ Hôm Nay là công cụ giải trí và tự chiêm nghiệm, không thay thế tư vấn y tế, pháp lý, tài chính hoặc quyết định cá nhân."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Có cần đăng nhập để gieo quẻ không?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Không cần đăng nhập để bắt đầu. Đăng nhập giúp đồng bộ lịch sử quẻ giữa các thiết bị và lưu lại những lần chiêm nghiệm của bạn."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
   </head>
   <body class="min-h-screen bg-[#1A0503] selection:bg-gold-ancient selection:text-lacquer-deep overflow-x-hidden font-sans">
     <div id="root"></div>
+    <noscript>
+      <main style="max-width: 720px; margin: 0 auto; padding: 32px 20px; color: #f3e8ce; font-family: sans-serif; background: #1a0503;">
+        <h1>Quẻ Hôm Nay – Xin quẻ và gieo quẻ online</h1>
+        <p>Quẻ Hôm Nay là trải nghiệm xin quẻ trực tuyến bằng tiếng Việt, giúp bạn chiêm nghiệm công việc, tài lộc, tình duyên, gia đạo và sự an nhiên mỗi ngày.</p>
+        <p>Vui lòng bật JavaScript để sử dụng ống xăm và nhận quẻ hôm nay.</p>
+        <p><a href="https://quehomnay.online/" style="color: #e7c978;">Mở Quẻ Hôm Nay</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

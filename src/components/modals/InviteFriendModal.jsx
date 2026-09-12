@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { X, Gift, Copy, Check, Share2, Sparkles, Users, Info } from 'lucide-react';
 import { getOrCreateUserId } from '../../api/client';
 
-export default function InviteFriendModal({ isOpen, onClose, onBonusGranted }) {
+export default function InviteFriendModal({ isOpen, onClose, onBonusGranted, userId: authenticatedUserId }) {
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
-  const userId = getOrCreateUserId();
+  const userId = authenticatedUserId || getOrCreateUserId();
   const shareUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/?ref=${encodeURIComponent(userId)}` 
     : `https://quehomnay.com/?ref=${encodeURIComponent(userId)}`;

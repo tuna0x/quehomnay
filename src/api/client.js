@@ -27,6 +27,7 @@ export async function apiClient(endpoint, options = {}) {
 
   const config = {
     ...options,
+    credentials: 'same-origin',
     headers
   };
 

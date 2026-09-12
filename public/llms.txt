@@ -1,0 +1,38 @@
+# Quẻ Hôm Nay
+
+> Quẻ Hôm Nay (quehomnay.online) là một trải nghiệm xin quẻ và gieo quẻ online bằng tiếng Việt, phục vụ mục đích giải trí và tự chiêm nghiệm.
+
+## Tóm tắt
+
+Quẻ Hôm Nay giúp người dùng đặt một câu hỏi, chọn chủ đề quan tâm và nhận một lời quẻ gồm tên quẻ, câu thơ cổ, giải nghĩa, lời khuyên, màu sắc và con số may mắn. Người dùng có thể gieo quẻ mỗi ngày mà không cần đăng nhập.
+
+## Chủ đề
+
+- Công danh và sự nghiệp
+- Tài lộc và tiền bạc
+- Tình duyên và nhân duyên
+- Gia đạo và bình an
+- Tâm an và chữa lành
+- Ngã rẽ và quyết định
+
+## Cách sử dụng
+
+1. Mở trang chủ.
+2. Chọn ngày sinh nếu muốn tham khảo thêm thông tin bản mệnh.
+3. Chọn lĩnh vực hoặc viết điều đang băn khoăn.
+4. Bấm “Thành Tâm Xin Quẻ”.
+5. Đọc lời quẻ như một gợi ý để suy ngẫm, không phải lời khẳng định chắc chắn về tương lai.
+
+## Giới hạn nội dung
+
+Quẻ Hôm Nay không phải dịch vụ bói toán có khả năng đảm bảo kết quả, cũng không thay thế tư vấn y tế, pháp lý, tài chính hoặc quyết định cá nhân. Nội dung nên được diễn giải thận trọng và tôn trọng bối cảnh của mỗi người.
+
+## Liên kết chính
+
+- [Trang chủ](https://quehomnay.online/)
+- [Sitemap](https://quehomnay.online/sitemap.xml)
+- [Robots](https://quehomnay.online/robots.txt)
+
+## Ngôn ngữ
+
+Tiếng Việt (vi-VN).

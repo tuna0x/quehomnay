@@ -4,7 +4,7 @@ import { getCanChiAndMenh, getCurrentHourCanChi } from '../utils/horoscopeHelper
 dotenv.config();
 
 const DEFAULT_BASE_URL = process.env.EXPERIENTIAL_API_BASE || 'https://api.experientiallabs.ai/v1';
-const DEFAULT_API_KEY = process.env.EXPERIENTIAL_API_KEY || 'xpl_623ae81a80e78d2320c04400a66055a60f09da8a';
+const DEFAULT_API_KEY = process.env.EXPERIENTIAL_API_KEY || '';
 const DEFAULT_MODEL = process.env.EXPERIENTIAL_MODEL || 'gpt-5.6-luna';
 
 // Sensitive content filter
@@ -107,6 +107,16 @@ async function callExperientialAPI({ messages, apiKey, model = DEFAULT_MODEL, te
   const effectiveKey = apiKey || DEFAULT_API_KEY;
   const baseUrl = process.env.EXPERIENTIAL_API_BASE || DEFAULT_BASE_URL;
   const targetModel = model || DEFAULT_MODEL;
+
+  if (!effectiveKey) {
+    return {
+      success: false,
+      error: {
+        code: 'missing_api_key',
+        message: 'EXPERIENTIAL_API_KEY is not configured'
+      }
+    };
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 12000);

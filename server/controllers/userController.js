@@ -2,7 +2,7 @@ import * as userService from '../services/userService.js';
 
 export async function getUserStatus(req, res, next) {
   try {
-    const { userId } = req.query;
+    const userId = req.user?.id || req.query.userId;
     if (!userId) {
       return res.status(400).json({ error: 'userId is required' });
     }
@@ -15,7 +15,7 @@ export async function getUserStatus(req, res, next) {
 
 export async function claimInviteBonus(req, res, next) {
   try {
-    const { userId } = req.body;
+    const userId = req.user?.id || req.body.userId;
     if (!userId) {
       return res.status(400).json({ error: 'userId is required' });
     }
@@ -28,7 +28,8 @@ export async function claimInviteBonus(req, res, next) {
 
 export async function handleReferralClick(req, res, next) {
   try {
-    const { referrerId, visitorId } = req.body;
+    const { referrerId } = req.body;
+    const visitorId = req.user?.id || req.body.visitorId;
     if (!referrerId || !visitorId) {
       return res.status(400).json({ error: 'referrerId and visitorId are required' });
     }
@@ -41,7 +42,7 @@ export async function handleReferralClick(req, res, next) {
 
 export async function resetDailyLimit(req, res, next) {
   try {
-    const { userId } = req.body;
+    const userId = req.user?.id || req.body.userId;
     if (!userId) {
       return res.status(400).json({ error: 'userId is required' });
     }

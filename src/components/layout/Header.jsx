@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, History, Sparkles, Wind } from 'lucide-react';
+import { History, LogIn, MessageCircle, Sparkles, UserRound, Volume2, VolumeX, Wind } from 'lucide-react';
 import { 
   getSoundSetting, 
   saveSoundSetting, 
@@ -12,7 +12,7 @@ import {
   stopAmbientSound 
 } from '../../utils/audio.js';
 
-export default function Header({ onOpenHistory, historyCount = 0 }) {
+export default function Header({ onOpenHistory, historyCount = 0, authUser, onOpenAuth, onOpenAdminContact }) {
   const [soundOn, setSoundOn] = useState(getSoundSetting());
   const [ambientOn, setAmbientOn] = useState(getAmbientSetting());
 
@@ -83,6 +83,28 @@ export default function Header({ onOpenHistory, historyCount = 0 }) {
           >
             {soundOn ? <Volume2 size={16} /> : <VolumeX size={16} className="opacity-50" />}
           </button>
+
+          <button
+            onClick={onOpenAuth}
+            title={authUser ? 'Mở tài khoản' : 'Đăng nhập để đồng bộ lịch sử'}
+            className="h-9 max-w-[150px] rounded-md border border-gold-ancient/30 bg-[#1C0504]/90 px-2.5 text-xs font-serif text-gold-pale shadow transition hover:border-gold-bright hover:text-gold-bright flex items-center gap-1.5"
+          >
+            {authUser ? <UserRound size={15} /> : <LogIn size={15} />}
+            <span className="hidden max-w-[100px] truncate sm:inline">
+              {authUser ? (authUser.name || authUser.email?.split('@')[0] || 'Đạo hữu') : 'Đăng nhập'}
+            </span>
+          </button>
+
+          {authUser?.role === 'admin' && onOpenAdminContact && (
+            <button
+              onClick={onOpenAdminContact}
+              title="Quản lý lời nhắn"
+              className="h-9 rounded-md border border-gold-ancient/30 bg-[#1C0504]/90 px-2.5 text-xs font-serif text-gold-pale shadow transition hover:border-gold-bright hover:text-gold-bright flex items-center gap-1.5"
+            >
+              <MessageCircle size={15} />
+              <span className="hidden sm:inline">Lời nhắn</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenHistory}

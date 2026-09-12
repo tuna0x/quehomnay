@@ -1,0 +1,194 @@
+name: CD - Build and deploy
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - staging
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  ci:
+    name: Required CI gate
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  build-and-push-image:
+    name: Build and push image to GHCR
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=sha,prefix=sha-,format=long
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          build-args: |
+            VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-check:
+    name: Check production deployment configuration
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+    environment: ${{ inputs.environment || 'production' }}
+    outputs:
+      ready: ${{ steps.validate.outputs.ready }}
+    steps:
+      - name: Validate required deployment secrets
+        id: validate
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        shell: bash
+        run: |
+          missing=0
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_KEY DEPLOY_PATH ENV_PRODUCTION; do
+            if [ -z "${!name}" ]; then
+              echo "::warning::Missing required deployment secret: $name"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -eq 0 ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy-server:
+    name: Deploy image to server over SSH
+    runs-on: ubuntu-latest
+    needs: deploy-check
+    if: needs.deploy-check.outputs.ready == 'true'
+    environment: ${{ inputs.environment || 'production' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload production compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: docker-compose.prod.yml
+          target: ${{ secrets.DEPLOY_PATH }}
+
+      - name: Update server
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+          IMAGE_NAME: ghcr.io/${{ github.repository }}
+          IMAGE_TAG: sha-${{ github.sha }}
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          envs: DEPLOY_PATH,ENV_PRODUCTION,IMAGE_NAME,IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN
+          script_stop: true
+          script: |
+            set -Eeuo pipefail
+            cd "$DEPLOY_PATH"
+
+            umask 077
+            printf '%s\n' "$ENV_PRODUCTION" > .env
+            export IMAGE_NAME IMAGE_TAG
+
+            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            docker compose --env-file .env -f docker-compose.prod.yml config -q
+            docker compose --env-file .env -f docker-compose.prod.yml pull app
+            docker compose --env-file .env -f docker-compose.prod.yml up -d --remove-orphans
+
+            container_id="$(docker compose --env-file .env -f docker-compose.prod.yml ps -q app)"
+            for attempt in $(seq 1 30); do
+              health="$(docker inspect --format '{{.State.Health.Status}}' "$container_id" 2>/dev/null || true)"
+              if [ "$health" = "healthy" ]; then
+                echo "Application is healthy."
+                exit 0
+              fi
+              if [ "$health" = "unhealthy" ]; then
+                docker compose --env-file .env -f docker-compose.prod.yml logs --tail=100 app
+                exit 1
+              fi
+              sleep 2
+            done
+
+            docker compose --env-file .env -f docker-compose.prod.yml ps
+            docker compose --env-file .env -f docker-compose.prod.yml logs --tail=100 app
+            echo "Application did not become healthy in time."
+            exit 1
+
+  deployment-summary:
+    name: Deployment summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [ci, build-and-push-image, deploy-check, deploy-server]
+    steps:
+      - name: Write summary
+        shell: bash
+        run: |
+          {
+            echo "## Deployment"
+            echo "- Commit: `${{ github.sha }}`"
+            echo "- Image: `ghcr.io/${{ github.repository }}:sha-${{ github.sha }}`"
+            if [ "${{ needs.deploy-check.outputs.ready }}" = "true" ]; then
+              echo "- Server deploy: `${{ needs.deploy-server.result }}`"
+            else
+              echo "- Server deploy: skipped; configure deployment secrets"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ needs.deploy-server.result }}" = "failure" ]; then
+            exit 1
+          fi

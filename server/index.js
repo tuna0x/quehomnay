@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import app from './app.js';
 import { initDb } from './models/schema.js';
+import { ensureAdminFromEnv } from './services/authService.js';
 
 dotenv.config();
 
@@ -11,7 +12,13 @@ async function bootstrap() {
     // 1. Initialize PostgreSQL connection and run migrations
     await initDb();
 
-    // 2. Start HTTP server
+    // 2. Bootstrap the configured admin account without storing credentials in source.
+    const adminBootstrap = await ensureAdminFromEnv();
+    if (adminBootstrap) {
+      console.log('[AUTH] Bootstrap admin account ' + (adminBootstrap.created ? 'created' : 'verified') + '.');
+    }
+
+    // 3. Start HTTP server
     app.listen(PORT, () => {
       console.log(`=================================================`);
       console.log(`🚀 Quẻ Hôm Nay Backend running at: http://localhost:${PORT}`);

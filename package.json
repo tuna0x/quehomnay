@@ -12,6 +12,7 @@
     "docker:down": "docker compose down",
     "build": "vite build",
     "lint": "oxlint",
+    "test": "node --test server/test/app.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
